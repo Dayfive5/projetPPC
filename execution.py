@@ -8,18 +8,27 @@ cle_home = 128
 cle_market = 129
 
 if __name__ == "__main__":
-    print("Excution du programme")
-    #tableau d'entiers (shared memory)
-    condition_meteo = Array('i',2)
+    try :
+        print("------Début de l'execution du programme------")
+        #tableau d'entiers de taille=2 (shared memory)
+        condition_meteo = Array('i',2)
     
 
-    market = Market(condition_meteo, cle_market)
-    weather = Weather(condition_meteo)
+        #création du Market
+        market = Market(condition_meteo, cle_market)
+        #création du Weather
+        weather = Weather(condition_meteo)
 
-    market.start()
-    weather.start()
+        market.start()
+        weather.start()
 
-    market.join()
-    weather.join()
+        market.join()
+        weather.join()
 
-    print("Fin execution")
+    except KeyboardInterrupt :
+        print("^C : Keyboard Interruption")
+
+    finally :
+        market.terminate()
+        weather.terminate()
+        print("------Fin de l'execution du programme------")

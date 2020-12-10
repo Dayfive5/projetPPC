@@ -22,9 +22,9 @@ class Economics(Process):
         carburant = 10e-7
         devise = 10e-7
         while True:
-            #si nous avons une valeur inférieur à carburant alors il y'a une pénurie de carburant
+            #si nous avons une valeur inférieure à carburant alors il y'a une pénurie de carburant
             if random.random() < carburant:
                 self.envoieSignalCarburant()
-            #si nous avons une valeur inférieur à devise alors il y'a une crise de devise
+            #si nous avons une valeur inférieure à devise alors il y'a une crise de devise
             if random.random() < devise:
                 self.envoieSignalDevise()

@@ -16,7 +16,7 @@ class Politics(Process):
         os.kill(int(os.getppid()), signal.SIGILL)
 
     def run(self):
-        print("politique")
+        print("Politique")
 
         tension = 10e-7
         guerre = 10e-10
