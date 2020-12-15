@@ -1,4 +1,5 @@
 from multiprocessing import Process
+from threading import Thread, Lock, Semaphore, current_thread
 import random
 import time
 import signal
@@ -16,6 +17,7 @@ class Market(Process):
         self.cle = cle
         
 
+    #on gere les signaux des enfants
     def handler(self, sig, frame):
         if sig == signal.SIGTERM:
             print("Il y'a une tension diplomatique")
@@ -27,10 +29,23 @@ class Market(Process):
             print("Il y'a une crise de devise")
     
     def calcul_prix_energie(self):
+        #calculer le prix avec les différentes variables
         pass
 
     def afficher_conditions_meteo(self):
+        #afficher les conditions météo
+        #lock() ici ? (rwlockwrite ?)
         print([x for x in self.conditions_meteo])
+
+    #fonction transaction(type)
+        #lock() pour chaque transaction
+        #si type = achat
+            #code
+
+         #si type = vente
+             #code
+
+
 
 
     def run(self):
@@ -41,18 +56,24 @@ class Market(Process):
         mq_market = sysv_ipc.MessageQueue(self.cle, sysv_ipc.IPC_CREAT)
 
         while True:
-            message_acceuil = "Est ce que vous voulez acheter ou vendre "
-            mq_market.send(message_acceuil.encode())
-            a = mq_market.receive()
-            if a.decode() == "achete":
-                message_1 = "Combien d'energie"
-                mq_market.send(message_1.encode())
+        #creer un pool de threads qui vont gerer les messages queues avec les maisons
 
-            if a.decode() == "vendre":
-                message_2 = "Combien d'energie"
-                mq_market.send(message_2.encode())
-                value_v = mq_market.receive()
-                value = int(value_v.decode())
+
+            #ce qu'il faut faire pour communiquer
+            #revoir td4 car besoin d'envoyer le pid de la maison pour lui rep
+
+            #a = mq_market.receive()
+            #if a.decode() == "achete":
+                #message_1 = "Combien d'energie"
+                #mq_market.send(message_1.encode())
+                #appel fonction transaction(achat)
+
+            #if a.decode() == "vendre":
+                #message_2 = "Combien d'energie"
+                #mq_market.send(message_2.encode())
+                #value_v = mq_market.receive()
+                #value = int(value_v.decode())
+                #appel fonction transaction(vente)
         
         
         try:

@@ -12,6 +12,9 @@ if __name__ == "__main__":
         print("------Début de l'execution du programme------")
         #tableau d'entiers de taille=2 (shared memory)
         condition_meteo = Array('i',2)
+
+        #creer message queue home
+        #creer home avec en param cle_maison
     
 
         #création du Market

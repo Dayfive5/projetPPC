@@ -13,7 +13,7 @@ class Home(Process):
 
     def run(self):
         # politique : 1 = toujours donner 2: toujours vendre 3: vendre s'il n'y a pas de preneur 
-        mh = sysv_ipc.MessageQueue(self.cle_maison, sysv_ipc.IPC_CREAT)
+        mh = sysv_ipc.MessageQueue(self.cle_maison)
         mq = sysv_ipc.MessageQueue(self.cle_market)
 
         if self.conso < self.prod:
@@ -24,7 +24,7 @@ class Home(Process):
                 mh.send(don.encode())
 
             #if politique is trade with market : sell to market
-            if self.politique == 2:
+            elif self.politique == 2:
                 vente = str (self.prod-self.conso)
                 message = "vendre"
                 mq.send(message.encode())
@@ -33,7 +33,7 @@ class Home(Process):
                     mq.send(vente.encode())
 
             #if politique is give away and if no takers sell to the market : put it in the home msg queue, if no one take it, sell 
-            if self.politique == 3:
+            elif self.politique == 3:
                 don_temp = str(self.prod-self.conso)
                 timer.start()
                 mh.send(don_temp.encode())
@@ -52,7 +52,7 @@ class Home(Process):
                     if b_3.decode() == "Combien d'energie":
                         mq.send(don_temp.encode())
 
-        if self.conso > self.prod:
+        elif self.conso > self.prod:
             #if there's a house giving energy in the message queue, take it
 
             #else buy it at the market
