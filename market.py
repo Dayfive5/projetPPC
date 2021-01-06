@@ -28,21 +28,26 @@ class Market(Process):
         if sig == signal.SIGUSR2:
             print("Il y'a une crise de devise")
     
+    #calculer le prix avec les différentes variables
     def calcul_prix_energie(self):
-        #calculer le prix avec les différentes variables
+       
         pass
 
+    #afficher les conditions météo
     def afficher_conditions_meteo(self):
-        #afficher les conditions météo
-        #lock() ici ? (rwlockwrite ?)
+        
         print([x for x in self.conditions_meteo])
+
+    #fonction qui remet du stock d'energie dans le market s'il n'y en a plus
+    def restock_energie(stockInit):
+
 
     #fonction transaction(type)
         #lock() pour chaque transaction
         #si type = achat
             #code
 
-         #si type = vente
+        #si type = vente
              #code
 
 

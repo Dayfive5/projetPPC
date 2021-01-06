@@ -13,9 +13,13 @@ class Home(Process):
 
     def run(self):
         # politique : 1 = toujours donner 2: toujours vendre 3: vendre s'il n'y a pas de preneur 
+
+        #on instancie nos clés
         mh = sysv_ipc.MessageQueue(self.cle_maison)
         mq = sysv_ipc.MessageQueue(self.cle_market)
 
+
+        #si la consommation d'energie est plus grande que la production, on peut donner/vendre :
         if self.conso < self.prod:
 
             #if politique is give away : put it in a msg queue
