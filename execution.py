@@ -1,5 +1,5 @@
 from market import *
-from home import *
+#from home import *
 from weather import *
 from multiprocessing import Array
 import sysv_ipc
@@ -34,4 +34,6 @@ if __name__ == "__main__":
     finally :
         market.terminate()
         weather.terminate()
+        a= 25 + random.randint(-5,5)
+        print(a)
         print("------Fin de l'execution du programme------")

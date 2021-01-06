@@ -3,6 +3,7 @@ from threading import Thread, Lock, Semaphore, current_thread
 import random
 import time
 import signal
+import sysv_ipc
 
 from politics import *
 from economics import *
@@ -30,16 +31,15 @@ class Market(Process):
     
     #calculer le prix avec les différentes variables
     def calcul_prix_energie(self):
-       
         pass
 
     #afficher les conditions météo
     def afficher_conditions_meteo(self):
-        
         print([x for x in self.conditions_meteo])
 
     #fonction qui remet du stock d'energie dans le market s'il n'y en a plus
     def restock_energie(stockInit):
+        pass
 
 
     #fonction transaction(type)
@@ -60,7 +60,7 @@ class Market(Process):
 
         mq_market = sysv_ipc.MessageQueue(self.cle, sysv_ipc.IPC_CREAT)
 
-        while True:
+        #while True:
         #creer un pool de threads qui vont gerer les messages queues avec les maisons
 
 
