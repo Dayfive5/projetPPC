@@ -16,10 +16,8 @@ class Politics(Process):
         os.kill(int(os.getppid()), signal.SIGILL)
 
     def run(self):
-        print("Politique")
-
-        tension = 10e-7
-        guerre = 10e-10
+        tension = 10e-8
+        guerre = 10e-9
 
         while True:
             #si nous avons une valeur inférieur à tension alors il y'a une tension diplomatique
@@ -27,6 +25,7 @@ class Politics(Process):
                 self.envoieSignalTension()
             if random.random() < tension:
                 self.envoieSignalGuerre()
+               
             
 
 

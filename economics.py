@@ -4,6 +4,7 @@ import random
 import os
 
 
+
 class Economics(Process):
     def __init__(self):
         super().__init__()
@@ -17,10 +18,8 @@ class Economics(Process):
         os.kill(int(os.getppid()), signal.SIGUSR2)
     
     def run(self):
-        print("Economie")
-
-        carburant = 10e-7
-        devise = 10e-7
+        carburant = 10e-8
+        devise = 10e-8
         while True:
             #si nous avons une valeur inférieure à carburant alors il y'a une pénurie de carburant
             if random.random() < carburant:

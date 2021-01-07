@@ -1,25 +1,24 @@
-from multiprocessing import Process
-from threading import Lock
-
+from multiprocessing import Process, Lock
+import signal
+import random
 
 class Weather(Process):
-    def __init__(self, meteo):
-        super().__init__()
-        self.meteo = meteo
-    
+	
+	def __init__(self, meteo, mutex):
+		super().__init__()
+		self.meteo = meteo
+		self.mutex = mutex
+		self.sign = 0
+		
 
-    def run(self):
-        mutex = Lock()
-        #i=0
-        #if signal du jour est appelé (signal = true) :
-        with mutex :
-    		print("Météo")
-    		self.meteo[0]=25
-    	
-        #a = 25 + random.randint(-5,5)
-        #print(a)
-        #i+=1
-       		#signal = false
+	def handler(self, sig, frame):
+		if sig == signal.SIGALRM :
+			with self.mutex :
+				self.meteo.value = 25 + random.randint(-5,5)
+	
 
-        #while True:
-        #    pass
+
+	def run (self) :
+		signal.signal(signal.SIGALRM, self.handler)
+		while True :
+			pass

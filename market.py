@@ -10,39 +10,67 @@ from economics import *
 from weather import *
 
 
+
 class Market(Process):
-    def __init__(self, conditions_meteo, cle):
+
+    #Initialisation
+    def __init__(self, conditions_meteo, cle, mutex):
         super().__init__()
         self.prix_energie_init = 0.145
         self.conditions_meteo = conditions_meteo
         self.cle = cle
+        self.sign = 0
+        self.stockInit = 500
+        self.mutex = mutex
+        #Gestion du jour :
+        signal.signal(signal.SIGALRM, self.handlerJour)
+        #Gestion des signaux economics et politics
+        signal.signal(signal.SIGTERM, self.handler)
+        signal.signal(signal.SIGILL, self.handler)
+        signal.signal(signal.SIGUSR1, self.handler)
+        signal.signal(signal.SIGUSR2, self.handler)
         
+    #Gestion du nouveau jour
+    def handlerJour(self, sig, frame):
 
-    #on gere les signaux des enfants
+        #Gestion de la meteo
+        self.sign = 5
+
+        #Calcul du nouveau prix de l'energie
+        self.calcul_prix_energie()
+
+        #Gestion des transactions
+        self.transactions()
+
+
+
+    #Gestion des signaux des enfants politics et economics
     def handler(self, sig, frame):
         if sig == signal.SIGTERM:
-            print("Il y'a une tension diplomatique")
+            #Il y'a une tension diplomatique
+            self.sign = 1 
         if sig == signal.SIGILL:
-            print("Il y'a une guerre")
+            #Il y'a une guerre
+            self.sign = 2
         if sig == signal.SIGUSR1:
-            print("Il y'a une pénurie de carburant")
+            #Il y'a une pénurie de carburant
+            self.sign = 3
         if sig == signal.SIGUSR2:
-            print("Il y'a une crise de devise")
-    
-    #calculer le prix avec les différentes variables
+            #Il y'a une crise de devise
+            self.sign = 4
+            
+
+    #Calcul du prix avec les différentes variables
     def calcul_prix_energie(self):
         pass
 
-    #afficher les conditions météo
-    def afficher_conditions_meteo(self):
-        print([x for x in self.conditions_meteo])
+    #Fonction qui remet du stock d'energie dans le market s'il n'y en a plus
+    def restock_energie():
+        stock+=self.stockInit
 
-    #fonction qui remet du stock d'energie dans le market s'il n'y en a plus
-    def restock_energie(stockInit):
+    #Gestion des transactions
+    def transactions(self):
         pass
-
-
-    #fonction transaction(type)
         #lock() pour chaque transaction
         #si type = achat
             #code
@@ -50,21 +78,9 @@ class Market(Process):
         #si type = vente
              #code
 
+        #if stock < demande d'achat -> restock_energie()
 
-
-
-    def run(self):
-        signal.signal(signal.SIGTERM, self.handler)
-        signal.signal(signal.SIGUSR1, self.handler)
-        signal.signal(signal.SIGUSR2, self.handler)
-
-        mq_market = sysv_ipc.MessageQueue(self.cle, sysv_ipc.IPC_CREAT)
-
-        #while True:
-        #creer un pool de threads qui vont gerer les messages queues avec les maisons
-
-
-            #ce qu'il faut faire pour communiquer
+        #ce qu'il faut faire pour communiquer
             #revoir td4 car besoin d'envoyer le pid de la maison pour lui rep
 
             #a = mq_market.receive()
@@ -79,21 +95,48 @@ class Market(Process):
                 #value_v = mq_market.receive()
                 #value = int(value_v.decode())
                 #appel fonction transaction(vente)
-        
-        
+
+
+
+
+    def run(self):
+
+        #Création d'une message queue qui communiquera avec Home
+        mq_market = sysv_ipc.MessageQueue(self.cle, sysv_ipc.IPC_CREAT)
+
+        #creer un pool de threads qui vont gerer les messages queues avec les maisons
+
         try:
+            #Démarrage des proccessus fils
             politique = Politics()
             economique = Economics()
             politique.start()
             economique.start()
 
             while True:
-                time.sleep(2)
-                self.afficher_conditions_meteo()
+
+                if self.sign == 1:
+                    print("Politique : Il y'a une tension diplomatique")
+                    self.sign = 0
+                elif self.sign == 2:
+                    print("Politique : Il y'a une guerre")
+                    self.sign = 0
+                elif self.sign == 3:
+                    print("Economie : Il y'a une pénurie de carburant")
+                    self.sign = 0
+                elif self.sign == 4:
+                    print("Economie : Il y'a une crise de devise") 
+                    self.sign = 0
+                elif self.sign == 5:
+                    print("Météo : ", self.conditions_meteo.value)
+                    self.sign = 0
+                #self.sign = 0
 
             politique.join()
             economique.join()
+
         except:
             politique.terminate()
             economique.terminate()
 
+       
