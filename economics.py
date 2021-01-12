@@ -2,7 +2,7 @@ from multiprocessing import Process
 import signal
 import random
 import os
-
+import time
 
 
 class Economics(Process):
@@ -11,7 +11,7 @@ class Economics(Process):
 
     def envoieSignalCarburant(self):
         #on envoie au processus parent Market le signal SIGTUSR1 s'il y'a une pénurie de carburant
-        os.kill(int(os.getppid()), signal.SIGUSR1)
+        os.kill(int(os.getppid()), signal.SIGINT)
  
     def envoieSignalDevise(self):
         #on envoie au processus parent Market le signal SIGTUSR2 s'il y'a une crise de devise
@@ -20,7 +20,8 @@ class Economics(Process):
     def run(self):
         carburant = 10e-8
         devise = 10e-8
-        while True:
+        t_end = time.time()+1
+        while (time.time() < t_end):
             #si nous avons une valeur inférieure à carburant alors il y'a une pénurie de carburant
             if random.random() < carburant:
                 self.envoieSignalCarburant()

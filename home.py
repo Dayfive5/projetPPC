@@ -1,74 +1,74 @@
-from multiprocessing import Process
+from multiprocessing import Process, Lock, Value
 import time
+import sysv_ipc
+import time 
+
+
 
 class Home(Process):
-    def __init__(self, numero_maison, prod_energie ,conso_energie, politique_energie, cle_market, cle_maison) :
+    num = 0 
+    def __init__(self, prod_energie ,conso_energie, politique_energie, cle_market, mutex,nombre_maison) :
         super().__init__()
-        self.num = numero_maison
+        global cle_home
         self.prod = prod_energie
         self.conso = conso_energie
         self.politique = politique_energie
         self.cle_market = cle_market
-        self.cle_maison = cle_maison
-
+        self.cle_maison = 128
+        self.mutex = mutex
+        Home.num += 1
+        nombre_maison.Value = Home.num
+        mq_home = sysv_ipc.MessageQueue(self.cle_maison, sysv_ipc.IPC_CREAT)
+        
     def run(self):
         # politique : 1 = toujours donner 2: toujours vendre 3: vendre s'il n'y a pas de preneur 
+        print("La maison ", Home.num , " est dans le marché" )
+        time.sleep(5)
 
-        #on instancie nos clés
-        mh = sysv_ipc.MessageQueue(self.cle_maison)
-        mq = sysv_ipc.MessageQueue(self.cle_market)
+        mq_home = sysv_ipc.MessageQueue(self.cle_maison)
 
 
-        #si la consommation d'energie est plus grande que la production, on peut donner/vendre :
-        if self.conso < self.prod:
-
-            #if politique is give away : put it in a msg queue
-            if self.politique == 1:
-                don = str(self.prod-self.conso)
-                mh.send(don.encode())
-
-            #if politique is trade with market : sell to market
-            elif self.politique == 2:
-                vente = str (self.prod-self.conso)
-                message = "vendre"
-                mq.send(message.encode())
-                b = mq.receive()
-                if b.decode() == "Combien d'energie"
-                    mq.send(vente.encode())
-
-            #if politique is give away and if no takers sell to the market : put it in the home msg queue, if no one take it, sell 
-            elif self.politique == 3:
-                don_temp = str(self.prod-self.conso)
-                timer.start()
-                mh.send(don_temp.encode())
-                while timer < 20:
-                    c = decode(mh.receive())
-                    if (c == "merci"):
-                        print("la maison", self.num, "a donné de l'énergie")
-                        timer.stop()
-                        #enelver don_temp de la queue (A CODER)
-                if timer > 20
-                    #enlever don_temp de la queue (A CODER)
-                    timer.stop()
-                    message_3 = "vendre"
-                    mq.send(message_3.encode())
-                    b_3 = mq.receive()
-                    if b_3.decode() == "Combien d'energie":
-                        mq.send(don_temp.encode())
-
-        elif self.conso > self.prod:
-            #if there's a house giving energy in the message queue, take it
-
-            #else buy it at the market
-                
     
+        if self.politique == 1:
+            if 10*self.conso < self.prod:
+                don = self.prod-10*self.conso
+                self.prod = 10*self.conso
+                print("La maison  " ,Home.num, "donne une quantité d'energie  ", don)
+                don_byte = str(don).encode()
+                mq_home.send(don_byte,type=1)
+            elif self.conso > self.prod:
+                while (self.conso > self.prod):
+                    while(mq_home.current_messages > 0):
+                        recup_don,t = mq_home.receive(type=1)
+                        valeur_recup = int(recup_don.decode())
+                        self.prod = self.prod + valeur_recup
+                        print("La maison ",Home.num, "a pu récupérer ", valeur_recup, " d'energie")
+                    if (mq_home.current_messages == 0):
+                        break
+                #si on n'arrive pas à recupérer toute la valeur qu il nous faut des dons on va acheter du market
+                if self.prod < self.conso:
+                    valeur_achete = self.conso-self.prod
+                    print("La maison ",Home.num, "va acheter ", valeur_achete," du market")
+                    #Market.vendreAuMaison(valeur_achete)#
 
-        #timers : n'existent pas directement en python
-        #pour chronometrer du temps il faut:
-        #import time
-        #t0=time.time()
-        #on ecrit notre code
-        #t1=time.time()
-        #temps_total = t1-t0
-        #OU : on ecrit une classe Timer et on l'importe ici
-
+                    
+        if self.politique == 2:
+            if 10*self.conso < self.prod:
+                vendre = self.prod-10*self.conso
+                self.prod = 10*self.conso
+                print("La maison  " ,Home.num, "a vendu au marchet ", vendre )
+            while (self.conso > self.prod):
+                while(mq_home.current_messages > 0):
+                    recup_don,t = mq_home.receive(type=1)
+                    valeur_recup = int(recup_don.decode())
+                    self.prod = self.prod + valeur_recup
+                    #if recup_don.decode() == "":
+                    # break
+                    print("La maison ",Home.num, "a pu récupérer ", valeur_recup, " d'energie")
+                    if (mq_home.current_messages == 0):
+                        break
+            #si on n'arrive pas à recupérer toute la valeur qu il nous faut des dons on va acheter du market
+            if self.prod < self.conso:
+                    valeur_achete = self.conso-self.prod
+                    print("La maison ",Home.num, "va acheter ", valeur_achete," du market")
+                    #Market.vendreAuMaison(valeur_achete)#

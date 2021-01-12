@@ -2,6 +2,7 @@ from multiprocessing import Process
 import signal
 import random
 import os
+import time
 
 class Politics(Process):
     def __init__(self):
@@ -18,12 +19,12 @@ class Politics(Process):
     def run(self):
         tension = 10e-8
         guerre = 10e-9
-
-        while True:
+        t_end = time.time()+1
+        while (time.time()<t_end):
             #si nous avons une valeur inférieur à tension alors il y'a une tension diplomatique
-            if random.random() < tension:
+            if random.random() < tension :
                 self.envoieSignalTension()
-            if random.random() < tension:
+            if random.random() < tension :
                 self.envoieSignalGuerre()
                
             
