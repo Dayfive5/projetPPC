@@ -1,6 +1,5 @@
 from market import *
 from home import *
-from weather import *
 from multiprocessing import Value
 import sysv_ipc
 import signal

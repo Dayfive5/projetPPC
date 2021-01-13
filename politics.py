@@ -27,6 +27,3 @@ class Politics(Process):
             if random.random() < tension :
                 self.envoieSignalGuerre()
                
-            
-
-
