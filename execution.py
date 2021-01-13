@@ -53,12 +53,18 @@ if __name__ == "__main__":
         market.start()
         weather.start()
 
-        #envoi du signal du jour (envoie un SIGALRM) (a coder : toutes les 10 secondes)
-        os.kill(weather.pid, signal.SIGSEGV)
-        os.kill(market.pid, signal.SIGUSR1)
+        #envoi du signal du jour (a coder : toutes les 2 secondes)
+        
+        i=0
+        while (i<5) :
+            os.kill(weather.pid, signal.SIGSEGV)
+            os.kill(market.pid, signal.SIGUSR1)
+            print("a")
+            time.sleep(3)
+            i+=1
         
         #os.kill(int(home.pid, signal.SIGALRM)
-        time.sleep(3)
+        #time.sleep(3)
         
         #os.kill(int(weather.pid), signal.SIGALRM)
         #os.kill(int(market.pid), signal.SIGALRM)

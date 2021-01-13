@@ -14,14 +14,13 @@ class Weather(Process):
 
 	def handler(self, sig, frame):
 		if sig == signal.SIGSEGV :
-			self.sign = 1
 			Weather.num_jour += 1
 			with self.mutex :
 				self.meteo.Value = 25 + random.randint(-5,5)
-			print("Jour",Weather.num_jour, " : la température est de ", self.meteo.Value)
-			
-	
+			self.sign = 1
 
 
 	def run (self) :
-		pass
+		if (self.sign==1):
+			print("Jour",Weather.num_jour, " : la température est de ", self.meteo.Value)
+			self.sign = 0
