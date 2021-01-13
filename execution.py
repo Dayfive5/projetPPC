@@ -59,7 +59,9 @@ if __name__ == "__main__":
         while (i<5) :
             os.kill(weather.pid, signal.SIGSEGV)
             os.kill(market.pid, signal.SIGUSR1)
-            print("a")
+            pid_home = [home_1.pid, home_2.pid, home_3.pid, home_4.pid, home_5.pid]
+            for p in pid_home :
+                os.kill(p, signal.SIGCLD)
             time.sleep(3)
             i+=1
         

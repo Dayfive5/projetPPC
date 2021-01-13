@@ -10,7 +10,7 @@ class Economics(Process):
         super().__init__()
 
     def envoieSignalCarburant(self):
-        #on envoie au processus parent Market le signal SIGTUSR1 s'il y'a une pénurie de carburant
+        #on envoie au processus parent Market le signal SIGTINT s'il y'a une pénurie de carburant
         os.kill(int(os.getppid()), signal.SIGINT)
  
     def envoieSignalDevise(self):

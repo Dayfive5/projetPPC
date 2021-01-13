@@ -14,20 +14,46 @@ from weather import *
 class Market(Process):
     numero_Jour = 0
     #Initialisation
-    def __init__(self, conditions_meteo , cle, mutex):
+    def __init__(self, conditions_meteo, cle, mutex):
         super().__init__()
         self.prix_energie_init = 0.145
         self.conditions_meteo = conditions_meteo
         self.cle = cle
+        self.mutex = mutex
+
+        #Gestion du jour 
         self.sign_jour = 0
+
+        #Présence des facteurs externes
         self.sign_devise = 0 
         self.sign_carburant = 0
         self.sign_tension = 0
         self.sign_guerre = 0
+
+        #stock initial
         self.stockInit = 5000
-        self.mutex = mutex
+       
+        #prix init d'1W
+        self.prixWattactuel = 0
+        self.prixWattavant = 1
+
+        #coef d'attenuation (gamma)
+        self.coefWatt = 0.8
+
+        #coef des facteurs externes (politique et economique)
+        self.coefGuerre = 1.5
+        self.coefTension = 0.75
+        self.coefDevise = 0.5
+        self.coefPenurie = 0.5
+
+        #coef et présence des facteurs internes (météo)
+        self.coefMeteo = 0.5
+        self.sign_meteo = 0
+        
+
         #Gestion du jour :
         signal.signal(signal.SIGUSR1, self.handler)
+
         #Gestion des signaux economics et politics
         signal.signal(signal.SIGTERM, self.handler)
         signal.signal(signal.SIGILL, self.handler)
@@ -42,18 +68,19 @@ class Market(Process):
     #Gestion des signaux des enfants politics et economics
     def handler(self, sig, frame):
         if sig == signal.SIGUSR1 :
-           #Gestion de la meteo
+           #Gestion du jour
             self.sign_jour +=1
             politique = Politics()
             economique = Economics()
             politique.start()
             economique.start()
-            #while True
+            
             politique.join()
             economique.join()
             
         #Calcul du nouveau prix de l'energie
             self.calcul_prix_energie()
+
         #Gestion des transactions
             self.transactions()
         if sig == signal.SIGTERM:
@@ -72,7 +99,15 @@ class Market(Process):
 
     #Calcul du prix avec les différentes variables
     def calcul_prix_energie(self):
-        pass
+        #with self.mutex :
+        if (self.conditions_meteo.value < 12) or (self.conditions_meteo.value > 30) :
+            self.sign_meteo = 1  
+        self.prixWattactuel = self.coefWatt * self.prixWattavant + self.coefMeteo * self.sign_meteo + self.coefGuerre * self.sign_guerre + self.coefTension * self.sign_tension + self.coefPenurie * self.sign_carburant + self.coefDevise * self.sign_devise
+
+        print("Le prix d'un Watt pour ce jour est de ", self.prixWattactuel, "€.") 
+        print("prix av :", self.prixWattavant, "tension", self.sign_tension, "guerre", self.sign_guerre, "devise", self.sign_devise, "penurie", self.sign_carburant, "meteo", self.sign_meteo, self.conditions_meteo.value)
+        self.prixWattavant = self.prixWattactuel
+        self.meteo = 0
 
     #Fonction qui remet du stock d'energie dans le market s'il n'y en a plus
     def restock_energie():
@@ -127,16 +162,27 @@ class Market(Process):
         #time.sleep(2)
         #economique.start()
 
-        #while True
+        while True :
 
-        if self.sign_tension == 1:
-            print("Politique : Il y'a une tension diplomatique")
-        if self.sign_guerre == 1:
-            print("Politique : Il y'a une guerre")
-        if self.sign_carburant == 1:
-            print("Economie : Il y'a une pénurie de carburant")
-        if self.sign_devise == 1:
-            print("Economie : Il y'a une crise de devise") 
+            if self.sign_tension == 1:
+               print("Politique : Il y'a une tension diplomatique")
+               self.sign_tension = 0
+               time.sleep(0.01)
+
+            if self.sign_guerre == 1:
+                print("Politique : Il y'a une guerre")
+                self.sign_guerre = 0
+                time.sleep(0.01)
+
+            if self.sign_carburant == 1:
+                print("Economie : Il y'a une pénurie de carburant")
+                self.sign_carburant = 0
+                time.sleep(0.01)
+
+            if self.sign_devise == 1:
+                print("Economie : Il y'a une crise de devise")
+                self.sign_devise = 0 
+                time.sleep(0.01)
             
 
 

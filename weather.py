@@ -1,6 +1,7 @@
 from multiprocessing import Process, Lock, Value
 import signal
 import random
+import time
 
 class Weather(Process):
 	num_jour = 0
@@ -16,11 +17,14 @@ class Weather(Process):
 		if sig == signal.SIGSEGV :
 			Weather.num_jour += 1
 			with self.mutex :
-				self.meteo.Value = 25 + random.randint(-5,5)
+				self.meteo.Value = 25 + random.randint(-10,10)
 			self.sign = 1
 
 
 	def run (self) :
-		if (self.sign==1):
-			print("Jour",Weather.num_jour, " : la température est de ", self.meteo.Value)
-			self.sign = 0
+		while True :
+			if (self.sign==1):
+				print("----------------------------------------")
+				print("Jour",Weather.num_jour, " : la température est de ", self.meteo.Value)
+				self.sign = 0
+				time.sleep(0.01)
