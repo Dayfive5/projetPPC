@@ -98,9 +98,9 @@ class Market(Process):
 
     #Calcul du prix avec les différentes variables
     def calcul_prix_energie(self):
-        #with self.mutex :
-        if (self.conditions_meteo.value < 12) or (self.conditions_meteo.value > 30) :
-            self.sign_meteo = 1  
+        with self.mutex :
+            if (self.conditions_meteo.value < 12) or (self.conditions_meteo.value > 30) :
+                self.sign_meteo = 1  
         self.prixWattactuel = self.coefWatt * self.prixWattavant + self.coefMeteo * self.sign_meteo + self.coefGuerre * self.sign_guerre + self.coefTension * self.sign_tension + self.coefPenurie * self.sign_carburant + self.coefDevise * self.sign_devise
 
         print("Le prix d'un Watt pour ce jour est de ", self.prixWattactuel, "€.") 
@@ -146,8 +146,6 @@ class Market(Process):
 
 
     def run(self):
-        
-        
         #Création d'une message queue qui communiquera avec Home
         mq_market = sysv_ipc.MessageQueue(self.cle, sysv_ipc.IPC_CREAT)
 
@@ -163,7 +161,7 @@ class Market(Process):
         i = 0
         while True :
             if(i<5):
-
+                print("market", i)
                 if self.sign_tension == 1:
                     print("Politique : Il y'a une tension diplomatique")
                     self.sign_tension = 0
@@ -184,6 +182,7 @@ class Market(Process):
                     self.sign_devise = 0 
                     time.sleep(0.01)
                 i += 1
+                time.sleep(3)
 
             else :
                 break
@@ -211,7 +210,7 @@ class Weather(Process):
 		if sig == signal.SIGSEGV :
 			Weather.num_jour += 1
 			with self.mutex :
-				self.meteo.Value = 25 + random.randint(-10,10)
+				self.meteo.value = 25 + random.randint(-10,10)
 			self.sign = 1
 
 
@@ -221,7 +220,7 @@ class Weather(Process):
 			if(i<5):
 				if (self.sign==1):
 					print("----------------------------------------")
-					print("Jour",Weather.num_jour, " : la température est de ", self.meteo.Value)
+					print("Jour",Weather.num_jour, " : la température est de ", self.meteo.value)
 					self.sign = 0
 					time.sleep(0.01)
 					i +=1

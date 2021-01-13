@@ -62,6 +62,7 @@ if __name__ == "__main__":
             for p in pid_home :
                 os.kill(p, signal.SIGCLD)
             time.sleep(3)
+            print("execution", i)
             i+=1
         
         #os.kill(int(home.pid, signal.SIGALRM)

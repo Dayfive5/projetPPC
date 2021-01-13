@@ -32,7 +32,8 @@ class Home(Process):
         print("La maison ", Home.num , " est dans le marché" )
         time.sleep(5)
 
-        while True :
+        i=0
+        while (i<5) :
             mq_home = sysv_ipc.MessageQueue(self.cle_maison)
             if (self.sign_maison == 1) :
                 
@@ -74,3 +75,4 @@ class Home(Process):
 
                 sign_maison = 0
                 time.sleep(0.01)
+                i+=1
