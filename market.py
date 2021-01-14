@@ -37,9 +37,6 @@ class Market(Process):
         self.prixWattactuel = 0
         self.prixWattavant = 1
 
-        #coef d'attenuation (gamma)
-        self.coefWatt = 0.8
-
         #coef des facteurs externes (politique et economique)
         self.coefGuerre = 1.5
         self.coefTension = 0.75
@@ -105,7 +102,7 @@ class Market(Process):
         with self.mutex :
             if (self.conditions_meteo.value < 12) or (self.conditions_meteo.value > 30) :
                 self.sign_meteo = 1  
-        self.prixWattactuel = self.coefWatt * self.prixWattavant + self.coefMeteo * self.sign_meteo + self.coefGuerre * self.sign_guerre + self.coefTension * self.sign_tension + self.coefPenurie * self.sign_carburant + self.coefDevise * self.sign_devise
+        self.prixWattactuel = 0.8 * self.prixWattavant + self.coefMeteo * self.sign_meteo + self.coefGuerre * self.sign_guerre + self.coefTension * self.sign_tension + self.coefPenurie * self.sign_carburant + self.coefDevise * self.sign_devise
 
         print("Le prix d'un Watt pour ce jour est de ", self.prixWattactuel, "€.") 
         print("prix av :", self.prixWattavant, "tension", self.sign_tension, "guerre", self.sign_guerre, "devise", self.sign_devise, "penurie", self.sign_carburant, "meteo", self.sign_meteo, self.conditions_meteo.value)
