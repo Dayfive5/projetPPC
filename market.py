@@ -31,6 +31,7 @@ class Market(Process):
 
         #stock initial
         self.stockInit = 5000
+        self.stock = 0
        
         #prix init d'1W
         self.prixWattactuel = 0
@@ -48,6 +49,9 @@ class Market(Process):
         #coef et présence des facteurs internes (météo)
         self.coefMeteo = 0.5
         self.sign_meteo = 0
+
+        #affichage du prix du jour
+        self.sign_affPrix = 0
         
 
         #Gestion du jour :
@@ -78,7 +82,7 @@ class Market(Process):
             economique.join()
             
         #Calcul du nouveau prix de l'energie
-            self.calcul_prix_energie()
+            self.sign_affPrix = 1
 
         #Gestion des transactions
             self.transactions()
@@ -110,7 +114,7 @@ class Market(Process):
 
     #Fonction qui remet du stock d'energie dans le market s'il n'y en a plus
     def restock_energie():
-        stock+=self.stockInit
+        self.stock+=self.stockInit
 
 
     #Gestion des transactions
@@ -180,6 +184,11 @@ class Market(Process):
                 if self.sign_devise == 1:
                     print("Economie : Il y'a une crise de devise")
                     self.sign_devise = 0 
+                    time.sleep(0.01)
+
+                if self.sign_affPrix == 1 :
+                    self.calcul_prix_energie()
+                    self.sign_affPrix = 0
                     time.sleep(0.01)
                 i += 1
                 time.sleep(3)
