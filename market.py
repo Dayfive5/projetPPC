@@ -7,6 +7,7 @@ import sysv_ipc
 
 from politics import *
 from economics import *
+from varglobales import *
 
 
 
@@ -107,7 +108,7 @@ class Market(Process):
         print("Le prix d'un Watt pour ce jour est de ", self.prixWattactuel, "€.") 
         print("prix av :", self.prixWattavant, "tension", self.sign_tension, "guerre", self.sign_guerre, "devise", self.sign_devise, "penurie", self.sign_carburant, "meteo", self.sign_meteo, self.conditions_meteo.value)
         self.prixWattavant = self.prixWattactuel
-        self.meteo = 0
+        self.sign_meteo = 0
 
     #Fonction qui remet du stock d'energie dans le market s'il n'y en a plus
     def restock_energie():
@@ -163,6 +164,12 @@ class Market(Process):
         while True :
             if(i<5):
                 print("market", i)
+                
+                if self.sign_affPrix == 1 :
+                    self.calcul_prix_energie()
+                    self.sign_affPrix = 0
+                    time.sleep(0.01)
+
                 if self.sign_tension == 1:
                     print("Politique : Il y'a une tension diplomatique")
                     self.sign_tension = 0
@@ -183,10 +190,7 @@ class Market(Process):
                     self.sign_devise = 0 
                     time.sleep(0.01)
 
-                if self.sign_affPrix == 1 :
-                    self.calcul_prix_energie()
-                    self.sign_affPrix = 0
-                    time.sleep(0.01)
+                
                 i += 1
                 time.sleep(3)
 

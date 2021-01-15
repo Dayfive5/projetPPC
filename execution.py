@@ -1,5 +1,6 @@
 from market import *
 from home import *
+from varglobales import *
 from multiprocessing import Value
 import sysv_ipc
 import signal
