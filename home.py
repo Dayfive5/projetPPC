@@ -43,7 +43,7 @@ class Home(Process):
 			if (self.sign_maison == 1) :
 				
 				#actualisation de la consommation du jour des maisons
-				self.conso += random.randint(-50,50)
+				#self.conso += random.randint(-50,50)
 
 				#barriereA
 
@@ -105,6 +105,8 @@ class Home(Process):
 								self.prod = self.prod + valeur_recup
 								#if recup_don.decode() == "":
 								# break
+                                #enlever le message de la queue
+
 								print("La maison ",Home.num, "a pu récupérer ", valeur_recup, " d'energie")
 
 							except sysv_ipc.BusyError :

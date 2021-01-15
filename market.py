@@ -207,7 +207,7 @@ class Market(Process):
                     #barriere
                     startDay.wait()           
                     i += 1
-                    time.sleep(3)
+                    #time.sleep(3)
 
                 else :
                     break
