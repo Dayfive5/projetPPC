@@ -4,6 +4,7 @@ import time
 import sysv_ipc
 import time 
 import signal
+import random
 
 
 
@@ -41,7 +42,12 @@ class Home(Process):
 			#nouveau jour
 			if (self.sign_maison == 1) :
 				
-				#si la production est plus petite que 10 fois la production
+				#actualisation de la consommation du jour des maisons
+				self.conso += random.randint(-50,50)
+
+				#barriereA
+
+				#si la consommation est plus petite que 10 fois la production
 				if 10*self.conso < self.prod :
 
 					#si la maison suit la politique 1 : toujours donner
@@ -68,25 +74,25 @@ class Home(Process):
 
 					if self.politique == 3 :
 						#étape 1 : on met la qté en trop dans la mq des maisons
-                        donVente = self.prod-10*self.conso
-                        #A CHECKER AVEC NADA
-                        self.prod = 10*self.conso
-                        print("La maison ", Home.num, "donne une quantité d'énergie ", don)
-                        #on encode le don en bytes et on l'envoie dans la queue des maisons avec le type 1 (= don d'énergie)
-                        donVente_byte = str(donVente).encode()
-                        mq_home.send(donVente_byte, type=1)
+						donVente = self.prod-10*self.conso
+						#A CHECKER AVEC NADA
+						self.prod = 10*self.conso
+						print("La maison ", Home.num, "donne une quantité d'énergie ", don)
+						#on encode le don en bytes et on l'envoie dans la queue des maisons avec le type 1 (= don d'énergie)
+						donVente_byte = str(donVente).encode()
+						mq_home.send(donVente_byte, type=1)
 
-                        
-                        #barriere qui attend que les transac entre home soient terminées syncHomes
-                        #étape 2 : si personne ne la prend on l'enleve de la mq des maisons
-                        
-                            print("Personne n'a pris le don de la maison ", Home.num, "elle va donc le vendre sur le marché")
-                            #on vide la home queue
+						
+						#barriere qui attend que les transac entre home soient terminées syncHomes
+						#étape 2 : si personne ne la prend on l'enleve de la mq des maisons
 
-                            #étape 3 : on met la qté en trop dans la mq du market
-                            mq_market.send(donVente_byte, type=2)
+						#    print("Personne n'a pris le don de la maison ", Home.num, "elle va donc le vendre sur le marché")
+							 #on vide la home queue
 
-                        
+							# #étape 3 : on met la qté en trop dans la mq du market
+						 #    mq_market.send(donVente_byte, type=2)
+
+						
 
 				elif self.conso > self.prod:
 
@@ -106,7 +112,7 @@ class Home(Process):
 
 						if (mq_home.current_messages == 0):
 							break
-                        #barriere synchHomes
+						#barriere synchHomes
 
 					#si on n'arrive pas à recupérer toute la valeur qu il nous faut des dons on va acheter du market
 					if self.conso > self.prod :

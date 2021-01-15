@@ -21,20 +21,20 @@ if __name__ == "__main__":
     
         nombre_maison = Value('i',0)
         lock = Lock()
-        home_1 = Home(200, 5, 1,2,lock,nombre_maison)    
+        home_1 = Home(200, 5, 1, 2, lock, nombre_maison)    
         home_1.start()
 
-        home_2 = Home(5,155, 1,2,lock,nombre_maison)
+        home_2 = Home(5, 155, 1, 2, lock, nombre_maison)
         home_2.start()
 
 
-        home_3 = Home(5,155, 1,2,lock,nombre_maison)
+        home_3 = Home(5, 155, 1, 2, lock, nombre_maison)
         home_3.start()
 
-        home_4 = Home(5,155, 1,2,lock,nombre_maison)
+        home_4 = Home(5, 155, 1, 2, lock, nombre_maison)
         home_4.start()
 
-        home_5 = Home(200, 5, 1,2,lock,nombre_maison)    
+        home_5 = Home(200, 5, 1, 2, lock, nombre_maison)    
         home_5.start()
 
     

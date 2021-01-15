@@ -159,6 +159,7 @@ class Market(Process):
                         self.calcul_prix_energie()
                         self.sign_affPrix = 0
                         time.sleep(0.01)
+                        #barriereA
 
                     if self.sign_tension == 1:
                         print("Politique : Il y'a une tension diplomatique")
@@ -180,8 +181,7 @@ class Market(Process):
                         self.sign_devise = 0 
                         time.sleep(0.01)
 
-                    startDay.wait()
-                    #barriere
+                    
 
                     #creation d'un pool de threads qui vont gerer les messages queues avec les maisons
                     if self.sign_transac == 1 :
@@ -205,7 +205,7 @@ class Market(Process):
                         #             time.sleep(0.01)
                                                  
                     #barriere
-                               
+                    startDay.wait()           
                     i += 1
                     time.sleep(3)
 
