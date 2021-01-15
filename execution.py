@@ -56,7 +56,7 @@ if __name__ == "__main__":
         #envoi du signal du jour (a coder : toutes les 2 secondes)
         
         i=0
-        while (i<5) :
+        while (i<JOURS) :
             os.kill(weather.pid, signal.SIGSEGV)
             os.kill(market.pid, signal.SIGUSR1)
             pid_home = [home_1.pid, home_2.pid, home_3.pid, home_4.pid, home_5.pid]

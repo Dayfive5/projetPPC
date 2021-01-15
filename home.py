@@ -36,7 +36,7 @@ class Home(Process):
 		#init.wait()
 
 		i=0
-		while (i<5) :
+		while (i<JOURS) :
 			mq_home = sysv_ipc.MessageQueue(self.cle_maison)
 			#nouveau jour
 			if (self.sign_maison == 1) :

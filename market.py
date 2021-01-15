@@ -61,10 +61,6 @@ class Market(Process):
         signal.signal(signal.SIGINT, self.handler)
         signal.signal(signal.SIGUSR2, self.handler)
         
-    #Gestion du nouveau jour
-    
-
-
 
     #Gestion des signaux des enfants politics et economics
     def handler(self, sig, frame):
@@ -106,7 +102,7 @@ class Market(Process):
         self.prixWattactuel = 0.8 * self.prixWattavant + self.coefMeteo * self.sign_meteo + self.coefGuerre * self.sign_guerre + self.coefTension * self.sign_tension + self.coefPenurie * self.sign_carburant + self.coefDevise * self.sign_devise
 
         print("Le prix d'un Watt pour ce jour est de ", self.prixWattactuel, "€.") 
-        print("prix av :", self.prixWattavant, "tension", self.sign_tension, "guerre", self.sign_guerre, "devise", self.sign_devise, "penurie", self.sign_carburant, "meteo", self.sign_meteo, self.conditions_meteo.value)
+        #print("prix av :", self.prixWattavant, "tension", self.sign_tension, "guerre", self.sign_guerre, "devise", self.sign_devise, "penurie", self.sign_carburant, "meteo", self.sign_meteo, self.conditions_meteo.value)
         self.prixWattavant = self.prixWattactuel
         self.sign_meteo = 0
 
@@ -162,7 +158,7 @@ class Market(Process):
         #economique.start()
         i = 0
         while True :
-            if(i<5):
+            if(i<JOURS):
                 print("market", i)
                 
                 if self.sign_affPrix == 1 :
@@ -227,7 +223,7 @@ class Weather(Process):
 	def run (self) :
 		i=0
 		while True:
-			if(i<5):
+			if(i<JOURS):
 				if (self.sign==1):
 					print("----------------------------------------")
 					print("Jour",Weather.num_jour, " : la température est de ", self.meteo.value)
