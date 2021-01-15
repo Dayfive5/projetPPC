@@ -57,17 +57,36 @@ class Home(Process):
 
 					#si la maison suit la politique 2 : toujours vendre
 					if self.politique == 2:
-						#vendre = l'enrgie qu'on a en trop
+						#vendre = l'energie qu'on a en trop
 						vendre = self.prod-10*self.conso
 						#A CHECKER AVEC NADA
 						self.prod = 10*self.conso
-						print("La maison ", Home.num, "a vendu au marché ", vendre)
+						print("La maison ", Home.num, "veut vendre au marché ", vendre)
 						#on encode la vente en byte et on l'envoie dans la queue du market avec le type 2 (= vente d'énergie)
-						#vendre_byte = str(vendre).encode()
-						#mq_market.send(vendre_byte, type=2)
+						vendre_byte = str(vendre).encode()
+						mq_market.send(vendre_byte, type=2)
 
 					if self.politique == 3 :
-						pass
+						#étape 1 : on met la qté en trop dans la mq des maisons
+                        donVente = self.prod-10*self.conso
+                        #A CHECKER AVEC NADA
+                        self.prod = 10*self.conso
+                        print("La maison ", Home.num, "donne une quantité d'énergie ", don)
+                        #on encode le don en bytes et on l'envoie dans la queue des maisons avec le type 1 (= don d'énergie)
+                        donVente_byte = str(donVente).encode()
+                        mq_home.send(donVente_byte, type=1)
+
+                        
+                        #barriere qui attend que les transac entre home soient terminées syncHomes
+                        #étape 2 : si personne ne la prend on l'enleve de la mq des maisons
+                        
+                            print("Personne n'a pris le don de la maison ", Home.num, "elle va donc le vendre sur le marché")
+                            #on vide la home queue
+
+                            #étape 3 : on met la qté en trop dans la mq du market
+                            mq_market.send(donVente_byte, type=2)
+
+                        
 
 				elif self.conso > self.prod:
 
@@ -87,6 +106,8 @@ class Home(Process):
 
 						if (mq_home.current_messages == 0):
 							break
+                        #barriere synchHomes
+
 					#si on n'arrive pas à recupérer toute la valeur qu il nous faut des dons on va acheter du market
 					if self.conso > self.prod :
 						valeur_achete = self.conso-self.prod
