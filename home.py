@@ -75,7 +75,7 @@ class Home(Process):
 						
 						while(mq_home.current_messages > 0):
 							try :
-								recup_don, t = mq_home.receive(type=1)
+								recup_don, t = mq_home.receive(type=1, block=False)
 								valeur_recup = int(recup_don.decode())
 								self.prod = self.prod + valeur_recup
 								#if recup_don.decode() == "":

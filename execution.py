@@ -62,7 +62,8 @@ if __name__ == "__main__":
             pid_home = [home_1.pid, home_2.pid, home_3.pid, home_4.pid, home_5.pid]
             for p in pid_home :
                 os.kill(p, signal.SIGCLD)
-            time.sleep(3)
+            #time.sleep(3)
+            startDay.wait()
             print("execution", i)
             i+=1
         

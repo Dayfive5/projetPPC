@@ -74,13 +74,6 @@ class Market(Process):
         if sig == signal.SIGUSR1 :
            #Gestion du jour
             self.sign_jour +=1
-            politique = Politics()
-            economique = Economics()
-            politique.start()
-            economique.start()
-            
-            politique.join()
-            economique.join()
             
         #Calcul du nouveau prix de l'energie
             self.sign_affPrix = 1
@@ -141,104 +134,90 @@ class Market(Process):
                 #le prix de l'energie va monter au jour suivant (car plus de demande)
                 self.sign_stonks += 1
 
-       
-
-        #if stock < demande d'achat -> restock_energie()
-
-        #ce qu'il faut faire devisepour communiquer
-            #revoir td4 car besoin d'envoyer le pid de la maison pour lui rep
-
-            #a = mq_market.receive()
-            #if a.decode() == "achete":
-                #message_1 = "Combien d'energie"
-                #mq_market.send(message_1.encode())
-                #appel fonction transaction(achat)
-
-            #if a.decode() == "vendre":
-                #message_2 = "Combien d'energie"
-                #mq_market.send(message_2.encode())
-                #value_v = mq_market.receive()
-                #value = int(value_v.decode())
-                #appel fonction transaction(vente)
-
 
     def run(self):
-        #Création d'une message queue qui communiquera avec Home
-        mq_market = sysv_ipc.MessageQueue(self.cle, sysv_ipc.IPC_CREAT)
+        try :
 
-        i = 0
-        while True :
-            if(i<JOURS):
-                print("market", i)
-                
-                if self.sign_affPrix == 1 :
-                    self.calcul_prix_energie()
-                    self.sign_affPrix = 0
-                    time.sleep(0.01)
 
-                if self.sign_tension == 1:
-                    print("Politique : Il y'a une tension diplomatique")
-                    self.sign_tension = 0
-                    time.sleep(0.01)
+            #Création d'une message queue qui communiquera avec Home
+            mq_market = sysv_ipc.MessageQueue(self.cle, sysv_ipc.IPC_CREAT)
 
-                if self.sign_guerre == 1:
-                    print("Politique : Il y'a une guerre")
-                    self.sign_guerre = 0
-                    time.sleep(0.01)
+            i = 0
+            while True :
+                if(i<JOURS):
+                    politique = Politics()
+                    economique = Economics()
+                    politique.start()
+                    economique.start()
 
-                if self.sign_carburant == 1:
-                    print("Economie : Il y'a une pénurie de carburant")
-                    self.sign_carburant = 0
-                    time.sleep(0.01)
-
-                if self.sign_devise == 1:
-                    print("Economie : Il y'a une crise de devise")
-                    self.sign_devise = 0 
-                    time.sleep(0.01)
-
-                #barriere
-
-                #creer un pool de threads qui vont gerer les messages queues avec les maisons
-                if self.sign_transac == 1 :
-                    self.sign_transac = 0
-                    with concurrent.futures.ThreadPoolExecutor(max_workers = 3) as executor :
-                        print("Début des transactions avec market")
-                            
-                        #voir s'il y a messages dans la queue
-                        print("Checking des messages recus dans la queue Market")
-                        while True :
-                            try :
-                                msg, t = mq_market.receive(block=False)
-                                break
-                                #print("mesg", mq_market.current_messages)
-                            except sysv_ipc.BusyError:
-                                time.sleep(0.01)
-                                
-                            #si oui, identifier son type : si son type est valide on envoie le message à la fonction transactions
-                            if t == 1 or t == 2 :
-                                print("Message recu valide")
-                                executor.submit(self.transactions, t, msg)
-
-                            elif (mq_market.current_messages == 0):
-                                print("Fin des transactions")
-                                
-                #barriere
-                           
-
-                i += 1
-                time.sleep(3)
-
-            else :
-                break
             
+                    politique.join()
+                    economique.join()
+                    print("market", i)
+                    
+                    if self.sign_affPrix == 1 :
+                        self.calcul_prix_energie()
+                        self.sign_affPrix = 0
+                        time.sleep(0.01)
+
+                    if self.sign_tension == 1:
+                        print("Politique : Il y'a une tension diplomatique")
+                        self.sign_tension = 0
+                        time.sleep(0.01)
+
+                    if self.sign_guerre == 1:
+                        print("Politique : Il y'a une guerre")
+                        self.sign_guerre = 0
+                        time.sleep(0.01)
+
+                    if self.sign_carburant == 1:
+                        print("Economie : Il y'a une pénurie de carburant")
+                        self.sign_carburant = 0
+                        time.sleep(0.01)
+
+                    if self.sign_devise == 1:
+                        print("Economie : Il y'a une crise de devise")
+                        self.sign_devise = 0 
+                        time.sleep(0.01)
+
+                    startDay.wait()
+                    #barriere
+
+                    #creation d'un pool de threads qui vont gerer les messages queues avec les maisons
+                    if self.sign_transac == 1 :
+                        self.sign_transac = 0
+                        # with concurrent.futures.ThreadPoolExecutor(max_workers = 3) as executor :
+                        #     print("Début des transactions avec market")
+                                
+                        #     #voir s'il y a messages dans la queue
+                        #     print("Checking des messages recus dans la queue Market")
+                        #     while True :
+                        #         try :
+                        #             msg, t = mq_market.receive(block=False)
+                        #             #tant que la queue n'est pas vide
+                        #             while (mq_market.current_messages > 0):
+                        #                 #identifier type du message : si son type est valide on envoie le message à la fonction transactions
+                        #                 if t == 1 or t == 2 :
+                        #                     print("Message recu valide")
+                        #                     executor.submit(self.transactions, t, msg)
+                        #             break
+                        #         except sysv_ipc.BusyError:
+                        #             time.sleep(0.01)
+                                                 
+                    #barriere
+                               
+                    i += 1
+                    time.sleep(3)
+
+                else :
+                    break
+                
 
 
-        #    politique.join()
-        #    economique.join()
 
-        #except:
-        #    politique.terminate()
-        #    economique.terminate()
+        except:
+            politique.terminate()
+            economique.terminate()
 
 class Weather(Process):
 	num_jour = 0
