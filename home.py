@@ -1,6 +1,5 @@
 from varglobales import *
 from multiprocessing import Process, Lock, Value
-#from Queue import Empty
 import time
 import sysv_ipc
 import time 
@@ -27,7 +26,7 @@ class Home(Process):
 		#numérotation des maisons	
 		Home.num += 1
 		nombre_maison.Value = Home.num
-		#messages queue utilisées
+		#message queue utilisée
 		self.mq_market = sysv_ipc.MessageQueue(self.cle_market)
 
 
