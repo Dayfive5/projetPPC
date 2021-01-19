@@ -1,5 +1,6 @@
 from varglobales import *
 from multiprocessing import Process, Lock, Value
+#from Queue import Empty
 import time
 import sysv_ipc
 import time 
@@ -63,9 +64,12 @@ class Home(Process):
 				print("La maison ", Home.num," n'a pas pu récupérer de l'énergie chez les autres maisons")
 				break
 			else:
-				energie_recue += self.maisonCom.get(timeout=0.5)
-				print("La maison ", Home.num," a pu récupérer ",energie_recue , "Watt d'énergie chez les autres maisons")
-				self.stock += energie_recue
+				try :
+					energie_recue += self.maisonCom.get(block=False)
+					print("La maison ", Home.num," a pu récupérer ",energie_recue , "Watt d'énergie chez les autres maisons")
+					self.stock += energie_recue
+				except :
+					time.sleep(0.01)
 
 	def run(self):
 		print("La maison ", Home.num , " est dans le marché" )
