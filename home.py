@@ -32,7 +32,7 @@ class Home(Process):
 
 	
 	def don_energie(self):
-		if self.politique == 1:
+		if self.politique == 1:	
 			energieDonnee = self.stock-self.conso
 			self.maisonCom.put(energieDonnee)
 			print("La maison ", Home.num,"  donne ",energieDonnee, "Watt d'énergie" )
@@ -58,12 +58,12 @@ class Home(Process):
 		besoin_energie = self.conso - self.stock
 		energie_recue = 0
 		while besoin_energie > energie_recue:
-			if self.maisonCom.empty() :
+			if self.maisonCom.empty():
 			#demande au marché
 				print("La maison ", Home.num," n'a pas pu récupérer de l'énergie chez les autres maisons")
 				break
 			else:
-				energie_recue += self.maisonCom.get()
+				energie_recue += self.maisonCom.get(timeout=0.5)
 				print("La maison ", Home.num," a pu récupérer ",energie_recue , "Watt d'énergie chez les autres maisons")
 				self.stock += energie_recue
 
