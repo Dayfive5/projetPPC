@@ -119,7 +119,7 @@ class Home(Process):
 			
 			#transactions avec market
 			
-			print("{0} debute transactions avec market".format(pid))
+			print("La maison {0} (pid = {1}) debute ses transactions avec market".format(Home.num, pid))
 			
 			#si la consommation est plus grande que la production alors on achete au marché
 			if self.conso > self.stock :
@@ -146,14 +146,14 @@ class Home(Process):
 				self.stock -= vendre
 			
 
-			print("{0} termine ses transactions avec market".format(Home.num))
+			#print("La maison {0} termine ses transactions avec market".format(Home.num))
 			endTransacMarket1.wait()
 			
 			endTransacMarket2.wait()
 			
 
 			i+=1
-			print("jour", i)
+			#print("jour", i)
 			startDay.wait()
 
 

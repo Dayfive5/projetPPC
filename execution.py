@@ -71,7 +71,6 @@ if __name__ == "__main__":
 			#barriere fin transac market
 			endTransacMarket1.wait()
 
-			print("signal fin transac market")
 			os.kill(market.pid, signal.SIGSEGV)
 
 			endTransacMarket2.wait()

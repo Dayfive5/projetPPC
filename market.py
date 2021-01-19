@@ -130,7 +130,7 @@ class Market(Process):
 				#le prix de l'energie va monter au jour suivant (car plus de demande)
 				self.sign_stonks += 1
 
-		message = "ACK type {0} par ".format(t) + str(pid)
+		message = "ACK d'une transaction de type {0} par la maison de pid = ".format(t) + str(pid)
 		self.mq_market.send(message.encode(), type=pid)
 		
 
@@ -199,7 +199,7 @@ class Market(Process):
 							time.sleep(0.01)
 
 					self.sign_transFin = 0
-					print("fin market jour ")
+					#print("fin market jour ")
 
 				endTransacMarket2.wait()					 
 						   
@@ -236,8 +236,8 @@ class Weather(Process):
 		while (i<JOURS):
 			barriere_flag.wait()
 			self.actualisation()
-			print("----------------------------------------")
-			print("Jour",i , " : la température est de ", self.meteo.value)
+			print("------------------------------------------------------------")
+			print("Jour",i , " : la température est de ", self.meteo.value, "°C")
 			actualisation_tour.wait()
 			endTransacMarket2.wait()
 			
