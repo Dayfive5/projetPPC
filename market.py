@@ -13,239 +13,230 @@ from varglobales import *
 
 
 class Market(Process):
-    numero_Jour = 0
-    #Initialisation
-    def __init__(self, conditions_meteo, cle, mutex):
-        super().__init__()
-        self.prix_energie_init = 0.145
-        self.conditions_meteo = conditions_meteo
-        self.cle = cle
-        self.mutex = mutex
+	numero_Jour = 0
+	#Initialisation
+	def __init__(self, conditions_meteo, cle, mutex):
+		super().__init__()
+		self.prix_energie_init = 0.145
+		self.conditions_meteo = conditions_meteo
+		self.cle = cle
+		self.mutex = mutex
+		self.mutex_stock = Lock()
+		#Création d'une message queue qui communiquera avec Home
+		self.mq_market = sysv_ipc.MessageQueue(self.cle)
 
-        #Gestion du jour 
-        self.sign_jour = 0
+		#Présence des facteurs externes
+		self.sign_devise = 0 
+		self.sign_carburant = 0
+		self.sign_tension = 0
+		self.sign_guerre = 0
 
-        #Présence des facteurs externes
-        self.sign_devise = 0 
-        self.sign_carburant = 0
-        self.sign_tension = 0
-        self.sign_guerre = 0
+		#stock initial
+		self.stockInit = 5000
+		self.stock = 0
+	   
+		#prix init d'1W
+		self.prixWattactuel = 0
+		self.prixWattavant = 1
 
-        #stock initial
-        self.stockInit = 5000
-        self.stock = 0
-       
-        #prix init d'1W
-        self.prixWattactuel = 0
-        self.prixWattavant = 1
+		#coef des facteurs externes (politique et economique)
+		self.coefGuerre = 1.5
+		self.coefTension = 0.75
+		self.coefDevise = 0.5
+		self.coefPenurie = 0.5
 
-        #coef des facteurs externes (politique et economique)
-        self.coefGuerre = 1.5
-        self.coefTension = 0.75
-        self.coefDevise = 0.5
-        self.coefPenurie = 0.5
+		#coef et présence des facteurs internes (météo et offre/demande)
+		self.coefMeteo = 0.5
+		self.sign_meteo = 0
+		self.sign_baisse = 0
+		self.coefBaisse = 0.1
+		self.sign_stonks = 0
+		self.coefStronks = 0.1
 
-        #coef et présence des facteurs internes (météo et offre/demande)
-        self.coefMeteo = 0.5
-        self.sign_meteo = 0
-        self.sign_baisse = 0
-        self.coefBaisse = 0.1
-        self.sign_stonks = 0
-        self.coefStronks = 0.1
-
-        #affichage du prix du jour
-        self.sign_affPrix = 0
-
-        #lancement du thread pool
-        self.sign_transac = 0        
-
-        #Gestion du jour :
-        signal.signal(signal.SIGUSR1, self.handler)
-
-        #Gestion des signaux economics et politics
-        signal.signal(signal.SIGTERM, self.handler)
-        signal.signal(signal.SIGILL, self.handler)
-        signal.signal(signal.SIGINT, self.handler)
-        signal.signal(signal.SIGUSR2, self.handler)
-        
-
-    #Gestion des signaux des enfants politics et economics
-    def handler(self, sig, frame):
-        if sig == signal.SIGUSR1 :
-           #Gestion du jour
-            self.sign_jour +=1
-            
-        #Calcul du nouveau prix de l'energie
-            self.sign_affPrix = 1
-
-        #Gestion des transactions entre home et market
-            self.sign_transac = 1
-
-        if sig == signal.SIGTERM:
-            #Il y'a une tension diplomatique
-            self.sign_tension = 1 
-        if sig == signal.SIGILL:
-            #Il y'a une guerre
-            self.sign_guerre = 1
-        if sig == signal.SIGINT:
-            #Il y'a une pénurie de carburant
-            self.sign_carburant = 1
-        if sig == signal.SIGUSR2:
-            #Il y'a une crise de devise
-            self.sign_devise = 1
-            
-
-    #Calcul du prix avec les différentes variables
-    def calcul_prix_energie(self):
-        with self.mutex :
-            if (self.conditions_meteo.value < 12) or (self.conditions_meteo.value > 30) :
-                self.sign_meteo = 1  
-        self.prixWattactuel = 0.8 * self.prixWattavant + self.coefMeteo * self.sign_meteo + self.coefGuerre * self.sign_guerre + self.coefTension * self.sign_tension + self.coefPenurie * self.sign_carburant + self.coefDevise * self.sign_devise - self.coefBaisse * self.sign_baisse + self.coefStronks * self.sign_stonks
-
-        print("Le prix d'un Watt pour ce jour est de ", self.prixWattactuel, "€.") 
-        #print("prix av :", self.prixWattavant, "tension", self.sign_tension, "guerre", self.sign_guerre, "devise", self.sign_devise, "penurie", self.sign_carburant, "meteo", self.sign_meteo, self.conditions_meteo.value)
-        self.prixWattavant = self.prixWattactuel
-        self.sign_meteo = 0
-        self.sign_baisse = 0
-        self.sign_stonks = 0
-
-    #Fonction qui remet du stock d'energie dans le market s'il n'y en a plus
-    def restock_energie(self):
-        self.stock+=self.stockInit
+		#fin des transactions avec market
+		self.sign_transFin = 0	
 
 
-    #Gestion des transactions
-    def transactions(self, t, msg):
-        #Décodage du message msg       
-        #pid, qte_energie =
+		#Gestion des signaux economics et politics
+		signal.signal(signal.SIGTERM, self.handler)
+		signal.signal(signal.SIGILL, self.handler)
+		signal.signal(signal.SIGINT, self.handler)
+		signal.signal(signal.SIGUSR2, self.handler)
 
-        #Gestion : Home vend de l'energie
-        if t==2 :
-            with Lock() :
-                self.stock += qte_energie
-                #le prix de l'energie va baisser au jour suivant (car plus d'offre)
-                self.sign_baisse += 1
+			
+		
 
-        #Gestion : Home achete de l'energie
-        if t==3 : 
-            with Lock() :
-                if qte_energie > self.stock :
-                    restock_energie()
-                #le prix de l'energie va monter au jour suivant (car plus de demande)
-                self.sign_stonks += 1
+	#Gestion des signaux des enfants politics et economics
+	def handler(self, sig, frame):
 
+		if sig == signal.SIGTERM:
+			#Il y'a une tension diplomatique
+			self.sign_tension = 1 
+		if sig == signal.SIGILL:
+			#Il y'a une guerre
+			self.sign_guerre = 1
+		if sig == signal.SIGINT:
+			#Il y'a une pénurie de carburant
+			self.sign_carburant = 1
+		if sig == signal.SIGUSR2:
+			#Il y'a une crise de devise
+			self.sign_devise = 1
+		
+		if sig == signal.SIGSEGV :
+			self.sign_transFin = 1
+			
 
-    def run(self):
-        try :
+	#Calcul du prix avec les différentes variables
+	def calcul_prix_energie(self):
+		with self.mutex :
+			if (self.conditions_meteo.value < 12) or (self.conditions_meteo.value > 30) :
+				self.sign_meteo = 1  
+		self.prixWattactuel = 0.8 * self.prixWattavant + self.coefMeteo * self.sign_meteo + self.coefGuerre * self.sign_guerre + self.coefTension * self.sign_tension + self.coefPenurie * self.sign_carburant + self.coefDevise * self.sign_devise - self.coefBaisse * self.sign_baisse + self.coefStronks * self.sign_stonks
 
+		print("Le prix d'un Watt pour ce jour est de ", self.prixWattactuel, "€.") 
+		#print("prix av :", self.prixWattavant, "tension", self.sign_tension, "guerre", self.sign_guerre, "devise", self.sign_devise, "penurie", self.sign_carburant, "meteo", self.sign_meteo, self.conditions_meteo.value)
+		self.prixWattavant = self.prixWattactuel
+		self.sign_baisse = 0
+		self.sign_stonks = 0
+		
 
-            #Création d'une message queue qui communiquera avec Home
-            mq_market = sysv_ipc.MessageQueue(self.cle, sysv_ipc.IPC_CREAT)
-
-            i = 0
-            while True :
-                if(i<JOURS):
-                    politique = Politics()
-                    economique = Economics()
-                    politique.start()
-                    economique.start()
-
-            
-                    politique.join()
-                    economique.join()
-                    print("market", i)
-                    
-                    if self.sign_affPrix == 1 :
-                        self.calcul_prix_energie()
-                        self.sign_affPrix = 0
-                        time.sleep(0.01)
-                        #barriereA
-
-                    if self.sign_tension == 1:
-                        print("Politique : Il y'a une tension diplomatique")
-                        self.sign_tension = 0
-                        time.sleep(0.01)
-
-                    if self.sign_guerre == 1:
-                        print("Politique : Il y'a une guerre")
-                        self.sign_guerre = 0
-                        time.sleep(0.01)
-
-                    if self.sign_carburant == 1:
-                        print("Economie : Il y'a une pénurie de carburant")
-                        self.sign_carburant = 0
-                        time.sleep(0.01)
-
-                    if self.sign_devise == 1:
-                        print("Economie : Il y'a une crise de devise")
-                        self.sign_devise = 0 
-                        time.sleep(0.01)
-
-                    
-
-                    #creation d'un pool de threads qui vont gerer les messages queues avec les maisons
-                    if self.sign_transac == 1 :
-                        self.sign_transac = 0
-                        # with concurrent.futures.ThreadPoolExecutor(max_workers = 3) as executor :
-                        #     print("Début des transactions avec market")
-                                
-                        #     #voir s'il y a messages dans la queue
-                        #     print("Checking des messages recus dans la queue Market")
-                        #     while True :
-                        #         try :
-                        #             msg, t = mq_market.receive(block=False)
-                        #             #tant que la queue n'est pas vide
-                        #             while (mq_market.current_messages > 0):
-                        #                 #identifier type du message : si son type est valide on envoie le message à la fonction transactions
-                        #                 if t == 1 or t == 2 :
-                        #                     print("Message recu valide")
-                        #                     executor.submit(self.transactions, t, msg)
-                        #             break
-                        #         except sysv_ipc.BusyError:
-                        #             time.sleep(0.01)
-                                                 
-                    #barriere
-                    startDay.wait()           
-                    i += 1
-                    #time.sleep(3)
-
-                else :
-                    break
-                
+	#Fonction qui remet du stock d'energie dans le market s'il n'y en a plus
+	def restock_energie(self):
+		self.stock+=self.stockInit
 
 
+	#Gestion des transactions
+	def transactions(self, t, msg):
+		#Décodage du message msg	   
+		m = msg.decode()
+		pid, qte_energie = m.split(";")
+		pid = int(pid)
+		qte_energie = int(qte_energie)
 
-        except:
-            politique.terminate()
-            economique.terminate()
+		#Gestion : Home vend de l'energie
+		if t==2 :
+			with self.mutex_stock :
+				self.stock += qte_energie
+				#le prix de l'energie va baisser au jour suivant (car plus d'offre)
+				self.sign_baisse += 1
+
+		#Gestion : Home achete de l'energie
+		elif t==3 : 
+			with self.mutex_stock :
+				while qte_energie > self.stock :
+					self.restock_energie()
+				#le prix de l'energie va monter au jour suivant (car plus de demande)
+				self.sign_stonks += 1
+
+		message = "ACK type {0} par ".format(t) + str(pid)
+		self.mq_market.send(message.encode(), type=pid)
+		print("Fin transaction")
+
+
+	def resetFlag(self) :
+		self.sign_devise = 0 
+		self.sign_carburant = 0
+		self.sign_tension = 0
+		self.sign_guerre = 0
+		self.sign_meteo = 0
+		
+
+
+	def run(self):
+		try :
+			print("Market start")
+			politique = Politics()
+			economique = Economics()
+			politique.start()
+			economique.start()
+
+			debut.wait()
+
+			
+			i = 0
+			while (i<JOURS): 
+				
+				self.resetFlag()
+				barriere_flag.wait()
+
+				actualisation_tour.wait()
+				
+
+				if self.sign_tension == 1:
+					print("Politique : Il y'a une tension diplomatique")
+					
+				if self.sign_guerre == 1:
+					print("Politique : Il y'a une guerre")
+
+				if self.sign_carburant == 1:
+					print("Economie : Il y'a une pénurie de carburant")
+
+				if self.sign_devise == 1:
+					print("Economie : Il y'a une crise de devise")
+				
+				self.calcul_prix_energie()
+				endTransacMaison.wait()
+
+				
+
+				#creation d'un pool de threads qui vont gerer les messages queues avec les maisons
+				
+				with concurrent.futures.ThreadPoolExecutor(max_workers = 3) as executor :
+						
+					#voir s'il y a messages dans la queue
+					while (self.sign_transFin == 0) :
+						try:
+							msg, t = self.mq_market.receive(block=False)
+
+							if t == 2 or t == 3:
+								
+								executor.submit(self.transactions, t, msg)
+						except sysv_ipc.BusyError:
+							time.sleep(0.01)
+
+					self.sign_transFin = 0
+					print("fin market jour ")
+
+				endTransacMarket2.wait()					 
+						   
+				i += 1
+				startDay.wait()
+				
+
+
+			politique.join()
+			economique.join()
+
+		except:
+			politique.terminate()
+			economique.terminate()
 
 class Weather(Process):
-	num_jour = 0
 	def __init__(self, meteo, mutex):
 		super().__init__()
 		self.meteo = meteo
 		self.mutex = mutex
-		self.sign = 0
-		signal.signal(signal.SIGSEGV, self.handler)
 		
 
-	def handler(self, sig, frame):
-		if sig == signal.SIGSEGV :
-			Weather.num_jour += 1
-			with self.mutex :
-				self.meteo.value = 25 + random.randint(-10,10)
-			self.sign = 1
+	def actualisation(self):
+		with self.mutex :
+			self.meteo.value = 25 + random.randint(-10,10)
+			
 
 
 	def run (self) :
+		print("Weather start")
+		debut.wait()
+
 		i=0
-		while True:
-			if(i<JOURS):
-				if (self.sign==1):
-					print("----------------------------------------")
-					print("Jour",Weather.num_jour, " : la température est de ", self.meteo.value)
-					self.sign = 0
-					time.sleep(0.01)
-					i +=1
-			else : 
-				break  
+		while (i<JOURS):
+			barriere_flag.wait()
+			self.actualisation()
+			print("----------------------------------------")
+			print("Jour",i , " : la température est de ", self.meteo.value)
+			actualisation_tour.wait()
+			endTransacMarket2.wait()
+			
+			i +=1
+			startDay.wait()
+			
