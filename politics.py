@@ -25,13 +25,15 @@ class Politics(Process):
 		i=0
 		while (i<JOURS):
 			barriere_flag.wait()
-			#si nous avons une valeur inférieur à tension alors il y'a une tension diplomatique
+			#si nous avons une valeur inférieure à tension alors il y'a une tension diplomatique
 			if random.random() < tension :
 				self.envoieSignalTension()
+			#si nous avons une valeur inférieure à guerre alors il y'a une tension diplomatique
 			if random.random() < guerre :
 				self.envoieSignalGuerre()
 			actualisation_tour.wait()
 			endTransacMarket2.wait()
+			#incrémentation du jour
 			i+=1
 			startDay.wait()
 

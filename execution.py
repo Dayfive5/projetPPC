@@ -13,16 +13,14 @@ cle_market = 129
 if __name__ == "__main__":
 	try :
 		print("------Début de la simulation------")
-		#entier (shared memory)
+		#création d'un entier partagé (shared memory)
 		condition_meteo = Value('i')
 		#Création d'une message queue qui communiquera avec Market
 		mq_market = sysv_ipc.MessageQueue(cle_market, sysv_ipc.IPC_CREX)
 		#Création d'une message queue qui communiquera avec Home
 		mq_home = sysv_ipc.MessageQueue(cle_home, sysv_ipc.IPC_CREX)
-
-		#creer message queue home
-		#creer home avec en param cle_maison
-	
+		
+	   #création et lancement des maisons
 		nombre_maison = Value('i',0)
 		lock = Lock()
 		home_1 = Home(200, 5, 1, cle_home, cle_market, lock, nombre_maison)	
@@ -41,8 +39,7 @@ if __name__ == "__main__":
 		home_5 = Home(200, 5, 2, cle_home, cle_market, lock, nombre_maison)	
 		home_5.start()
 
-		print("Dans notre simulation, nous allons nous interesser à l'échange entre ", nombre_maison.Value, " maisons")
-
+		print("Dans notre simulation, nous allons nous intéresser à l'échange entre ", nombre_maison.Value, " maisons.")
 
 		#création du Market
 		market = Market(condition_meteo, cle_market, lock)
@@ -56,34 +53,30 @@ if __name__ == "__main__":
 		#barriere de synchronisation du debut
 		debut.wait()
 
-
 		#envoi du signal du jour 
-		
 		i=0
 		while (i<JOURS) :
+			
 			barriere_flag.wait()
 
 			actualisation_tour.wait()
 			
-			#barriere fin transac maison
+			#barrière de fin des transactions entre maisons
 			endTransacMaison.wait()
 
-			#barriere fin transac market
+			#barrière 1 de fin des transactions avec market
 			endTransacMarket1.wait()
 
+			#envoi d'un signal de fin de transactions
 			os.kill(market.pid, signal.SIGSEGV)
 
+			#barrière 2 de fin des transactions avec market
 			endTransacMarket2.wait()
 
+			#incrémentation du jour
 			i+=1
 			startDay.wait()
 		
-		#os.kill(int(home.pid, signal.SIGALRM)
-		#time.sleep(3)
-		
-		#os.kill(int(weather.pid), signal.SIGALRM)
-		#os.kill(int(market.pid), signal.SIGALRM)
-
 
 		market.join()
 		weather.join()

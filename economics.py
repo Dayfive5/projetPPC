@@ -38,4 +38,5 @@ class Economics(Process):
 			actualisation_tour.wait()
 			endTransacMarket2.wait()
 			i+=1
+			#incrémentation du jour
 			startDay.wait()
