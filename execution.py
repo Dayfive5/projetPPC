@@ -1,14 +1,13 @@
 from market import *
 from home import *
 from varglobales import *
-from multiprocessing import Value
+from multiprocessing import Value , Queue
 import sysv_ipc
 import signal
 import os
 import time
 
-cle_home = 128
-cle_market = 129
+cle_market = 128
 
 if __name__ == "__main__":
 	try :
@@ -17,26 +16,26 @@ if __name__ == "__main__":
 		condition_meteo = Value('i')
 		#Création d'une message queue qui communiquera avec Market
 		mq_market = sysv_ipc.MessageQueue(cle_market, sysv_ipc.IPC_CREX)
-		#Création d'une message queue qui communiquera avec Home
-		mq_home = sysv_ipc.MessageQueue(cle_home, sysv_ipc.IPC_CREX)
-		
-	   #création et lancement des maisons
+		#Création d'une queue qui communiquera avec Home
+		maisonCom = Queue()
+
+		#création et lancement des maisons
 		nombre_maison = Value('i',0)
 		lock = Lock()
-		home_1 = Home(200, 5, 1, cle_home, cle_market, lock, nombre_maison)	
+		home_1 = Home(200, 5, 1, cle_market, lock, nombre_maison, maisonCom)	
 		home_1.start()
 
-		home_2 = Home(5, 155, 1, cle_home, cle_market, lock, nombre_maison)
+		home_2 = Home(5, 155, 1, cle_market, lock, nombre_maison, maisonCom)
 		home_2.start()
 
 
-		home_3 = Home(5, 155, 2, cle_home, cle_market, lock, nombre_maison)
+		home_3 = Home(5, 155, 2, cle_market, lock, nombre_maison, maisonCom)
 		home_3.start()
 
-		home_4 = Home(5, 155, 1, cle_home, cle_market, lock, nombre_maison)
+		home_4 = Home(5, 155, 1,  cle_market, lock, nombre_maison, maisonCom )
 		home_4.start()
 
-		home_5 = Home(200, 5, 2, cle_home, cle_market, lock, nombre_maison)	
+		home_5 = Home(200, 5, 2, cle_market, lock, nombre_maison, maisonCom )	
 		home_5.start()
 
 		print("Dans notre simulation, nous allons nous intéresser à l'échange entre ", nombre_maison.Value, " maisons.")
@@ -97,6 +96,5 @@ if __name__ == "__main__":
 	finally :
 		market.terminate()
 		weather.terminate()
-		mq_home.remove()
 		mq_market.remove()
 		print("------Fin de la simulation------")
