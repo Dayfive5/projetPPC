@@ -31,21 +31,24 @@ class Home(Process):
 		self.mq_market = sysv_ipc.MessageQueue(self.cle_market)
 
 
-	
+	# Les maisons de politique 1 donnent l'excès d'énergie aux autres maisons et pour celà elles mettent cette quantité d'énergie en plus dans la queue 
 	def don_energie(self):
 		if self.politique == 1:	
+			#energieDonnee représente la quantité du don
 			energieDonnee = self.stock-self.conso
+			#on met cette quantité d'énergie en plus dans la queue 
 			self.maisonCom.put(energieDonnee)
 			print("La maison ", Home.num,"  donne ",energieDonnee, "Watt d'énergie" )
+		#pour les maisons de politique 3 elles mettent l'excès d'energie dans la queue et le retirent après une durée
 		#if self.politique == 3 :
+			#energieDonnee représente la quantité du don
 			#energieDonnee = self.stock-self.conso
 			#self.maisonCom.put(energieDonnee)
 			#self.stock = self.stock - energieDonnee
 			#print("La maison ", Home.num," qui a une politique de donner temporairement (3) donne ",energieDonnee, " d'énergie")
-			#time.sleep(0.5)
+			#energie_vendre = 0
 			#time_end = time.time()+0.05
 			# on enlève le message de la queue après un certain temps
-			#energie_vendre = 0
 			#while (time.time() < time_end )
 			#	pass
 			#energie_vendre = self.maisonCom.get()
@@ -54,10 +57,14 @@ class Home(Process):
 			
 
 			
- 
+	# la fonction demande_energie permet à une maison de récupérer l'énergie  des autres maisons  
 	def demande_energie(self): 
+		#besoin_energie représente la quantité d'énergie qu'on cherche à récupérer des autres maisons
 		besoin_energie = self.conso - self.stock
+		#energie_recue représente l'énergie qu'on va recevoir des maisons 
 		energie_recue = 0
+		# tant que le besoin_energie est supérieur à l'energie_recue on va essayer de récupérer de l'énergie de la queue
+		# tout en faisant attention à ce que la queue ne soit pas vide
 		while besoin_energie > energie_recue:
 			if self.maisonCom.empty():
 			#demande au marché
@@ -65,6 +72,7 @@ class Home(Process):
 				break
 			else:
 				try :
+					#self.maisonCom.get permet de récupérer la quantité d'énergie de la queue
 					energie_recue += self.maisonCom.get(block=False)
 					print("La maison ", Home.num," a pu récupérer ",energie_recue , "Watt d'énergie chez les autres maisons")
 					self.stock += energie_recue
@@ -95,6 +103,7 @@ class Home(Process):
 			
 			#si la consommation est plus grande que la production : home veut récuperer de l'énergie de la maisonCom queue 
 			if self.conso > self.stock :
+				#j'appelle la fonction demande energie
 				self.demande_energie()
 
 			#si la consommation est plus petite que la production
@@ -122,7 +131,7 @@ class Home(Process):
 				self.mq_market.send(achat_byte, type=3)
 				#on attend de recevoir une confirmation de message et on print cette validation
 				m, _ = self.mq_market.receive(type=pid)
-				print(m.decode()+ " qui a recu du marché ", achat, "Watt d'energie")
+				print(m.decode()+ " qui a acheté du marché ", achat, "Watt d'energie")
 				#une fois l'énergie reçue, on l'ajoute à notre stock
 				self.stock += achat
 				

@@ -14,7 +14,7 @@ class Politics(Process):
 		os.kill(int(os.getppid()), signal.SIGTERM)
 
 	def envoieSignalGuerre(self):
-		#on envoie au processus parent Market le signal SIGTERM s'il y'a une tension diplomatique 
+		#on envoie au processus parent Market le signal SIGILL s'il y'a une guerre 
 		os.kill(int(os.getppid()), signal.SIGILL)
 
 	def run(self):
@@ -28,7 +28,7 @@ class Politics(Process):
 			#si nous avons une valeur inférieure à tension alors il y'a une tension diplomatique
 			if random.random() < tension :
 				self.envoieSignalTension()
-			#si nous avons une valeur inférieure à guerre alors il y'a une tension diplomatique
+			#si nous avons une valeur inférieure à guerre alors il y'a une guerre
 			if random.random() < guerre :
 				self.envoieSignalGuerre()
 			actualisation_tour.wait()
