@@ -11,7 +11,7 @@ barriere_flag = multiprocessing.Barrier(NB_MAISON+5) #on attend de reset nos fla
 
 actualisation_tour = multiprocessing.Barrier(NB_MAISON+5) #actualise les parametres de chaque objet 
 
-endTransacMaison = multiprocessing.Barrier(NB_MAISON+1) # transactions entre les maisons terminées
+endTransacMaison = multiprocessing.Barrier(NB_MAISON+2) # transactions entre les maisons terminées
 
 endTransacMarket1 = multiprocessing.Barrier(NB_MAISON+1) #premiere etape de la fermeture du market
 

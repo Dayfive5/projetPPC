@@ -63,6 +63,8 @@ class Market(Process):
 		signal.signal(signal.SIGINT, self.handler)
 		signal.signal(signal.SIGUSR2, self.handler)
 
+		signal.signal(signal.SIGSEGV, self.handler)
+
 			
 		
 
@@ -130,7 +132,7 @@ class Market(Process):
 
 		message = "ACK type {0} par ".format(t) + str(pid)
 		self.mq_market.send(message.encode(), type=pid)
-		print("Fin transaction")
+		
 
 
 	def resetFlag(self) :
@@ -176,6 +178,8 @@ class Market(Process):
 				
 				self.calcul_prix_energie()
 				endTransacMaison.wait()
+
+
 
 				
 
